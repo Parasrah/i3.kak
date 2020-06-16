@@ -1,0 +1,13 @@
+= i3.kak
+Parasrah <git@parasrah.com>
+
+== About
+
+The intent of this plugin is to provide a seamless experience with i3. Had I known how much this would be based
+on the plugin from Delapouite/kakoune-i3 I likely would have forked it instead, but I do expect them to diverge
+significantly. While I do not currently intend for this to be used by other people, I have done my best to
+ensure it can be using your terminal of choice.
+
+== Credit
+
+Thanks to Delapouite/kakoune-i3 for the initial inspiration
