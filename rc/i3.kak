@@ -50,11 +50,10 @@ define-command i3-new -docstring "Create a new window in the current container" 
     i3-new-impl ""
 }
 
-define-command i3-terminal-h -params 1.. -command-completion -docstring '
-i3-terminal <program> [<arguments>]: create a new terminal as vsplit i3 window
-The program passed as argument will be executed in the new terminal
-' \
-%{
+declare-option -hidden str i3_before_cmd ''
+declare-option -hidden str i3_after_cmd ''
+
+define-command -hidden -params 1.. i3-terminal-impl %{
     nop %sh{
         if [ -z "$kak_opt_termcmd" ] && [ -z "$kak_opt_i3_termcmd" ]; then
           echo "fail 'termcmd option is not set'"
@@ -62,7 +61,7 @@ The program passed as argument will be executed in the new terminal
         fi
         {
             i3_termcmd="${kak_opt_i3_termcmd:-$(echo "${kak_opt_termcmd}" | cut -d ' ' -f1)}"
-            i3-msg -q split 'v'
+            eval $kak_opt_i3_before_cmd
             exec $i3_termcmd "$@"
             # TODO: how to resize the split afterwards?
             # i3-msg resize set 20 ppt 30 ppt > /tmp/kak-i3.log 2>&1
@@ -71,8 +70,41 @@ The program passed as argument will be executed in the new terminal
             # TODO: add jq to list of required modules
             # TODO: only do if jq exists
         } > /dev/null 2>&1 < /dev/null &
+        eval $kak_opt_i3_after_cmd
         # https://github.com/mawww/kakoune/blob/master/doc/interfacing.asciidoc#basic-interaction
     }
+}
+
+
+define-command i3-terminal-b -params 1.. -command-completion -docstring '
+i3-terminal <program> [<arguments>]: create a new terminal underneath current window
+The program passed as argument will be executed in the new terminal
+' \
+%{
+    set-option global i3_before_cmd 'i3-msg -q split "v"'
+    set-option global i3_after_cmd ''
+    i3-terminal-impl %arg{@}
+}
+
+define-command i3-terminal-r -params 1.. -command-completion -docstring '
+i3-terminal <program> [<arguments>]: create a new terminal to right of current window
+The program passed as argument will be executed in the new terminal
+' \
+%{
+    set-option global i3_before_cmd 'i3-msg -q split h'
+    set-option global i3_after_cmd ''
+    i3-terminal-impl %arg{@}
+}
+
+# FIXME: this isn't working
+define-command i3-terminal-l -params 1.. -command-completion -docstring '
+i3-terminal <program> [<arguments>]: create a new terminal to right of current window
+The program passed as argument will be executed in the new terminal
+' \
+%{
+    set-option global i3_before_cmd 'i3-msg -q split h'
+    set-option global i3_after_cmd 'i3-msg -q move left'
+    i3-terminal-impl %arg{@}
 }
 
 declare-user-mode i3
