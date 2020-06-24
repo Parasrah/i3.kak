@@ -10,6 +10,8 @@ i3-mode includes keybindings for various manipulations of the i3 window manager
 
 provide-module i3wm %§
 
+declare-option str i3_termcmd ''
+
 define-command -hidden -params 1.. i3-new-impl %{
     evaluate-commands %sh{
         if [ -z "$kak_opt_termcmd" ]; then
@@ -48,19 +50,18 @@ define-command i3-new -docstring "Create a new window in the current container" 
     i3-new-impl ""
 }
 
-define-command i3-terminal -params 1.. -command-completion -docstring '
-i3-terminal <program> [<arguments>]: create a new terminal as a i3 window
+define-command i3-terminal-h -params 1.. -command-completion -docstring '
+i3-terminal <program> [<arguments>]: create a new terminal as vsplit i3 window
 The program passed as argument will be executed in the new terminal
 ' \
 %{
     nop %sh{
-        if [ -z "$kak_opt_termcmd" ]; then
+        if [ -z "$kak_opt_termcmd" ] && [ -z "$kak_opt_i3_termcmd" ]; then
           echo "fail 'termcmd option is not set'"
           exit
         fi
         {
-            magnitude=100
-            i3_termcmd=$(echo $kak_opt_termcmd | cut -d ' ' -f1)
+            i3_termcmd="${kak_opt_i3_termcmd:-$(echo "${kak_opt_termcmd}" | cut -d ' ' -f1)}"
             i3-msg -q split 'v'
             exec $i3_termcmd "$@"
             # TODO: how to resize the split afterwards?
@@ -73,8 +74,6 @@ The program passed as argument will be executed in the new terminal
         # https://github.com/mawww/kakoune/blob/master/doc/interfacing.asciidoc#basic-interaction
     }
 }
-
-# Suggested aliases
 
 declare-user-mode i3
 map global i3 n :i3-new<ret> -docstring "new window in the current container"
