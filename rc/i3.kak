@@ -22,32 +22,33 @@ define-command -hidden -params 1.. i3-new-impl %{
         shift
         # clone (same buffer, same line)
         cursor="$kak_cursor_line.$kak_cursor_column"
-        kakoune_args="-e 'execute-keys $@ :buffer <space> $kak_buffile <ret> :select <space> $cursor,$cursor <ret>'"
+        kakoune_args="-e 'execute-keys :buffer <space> $kak_buffile <ret> :select <space> $cursor,$cursor <ret> $@'"
         {
           # https://github.com/i3/i3/issues/1767
           [ -n "$i3_split" ] && i3-msg "split $i3_split"
-          exec $kak_opt_termcmd "kak -c $kak_session $kakoune_args"
+          exec $kak_opt_termcmd "kak -c ${kak_session} ${kakoune_args}"
         } < /dev/null > /dev/null 2>&1 &
     }
 }
-define-command i3-new-down -docstring "Create a new window below" %{
-    i3-new-impl v 
+
+define-command i3-new-down -params 0.. -docstring "Create a new window below" %{
+    i3-new-impl v %arg{@}
 }
 
-define-command i3-new-up -docstring "Create a new window below" %{
-    i3-new-impl v :nop <space> '%sh{ i3-msg move up }' <ret>
+define-command i3-new-up -params 0.. -docstring "Create a new window below" %{
+    i3-new-impl v :nop <space> '%sh{ i3-msg move up }' <ret> %arg{@}
 }
 
-define-command i3-new-right -docstring "Create a new window on the right" %{
-    i3-new-impl h
+define-command i3-new-right -params 0.. -docstring "Create a new window on the right" %{
+    i3-new-impl h %arg{@}
 }
 
 define-command i3-new-left -docstring "Create a new window on the left" %{
-    i3-new-impl h :nop <space> '%sh{ i3-msg move left }' <ret>
+    i3-new-impl h :nop <space> '%sh{ i3-msg move left }' <ret> %arg{@}
 }
 
-define-command i3-new -docstring "Create a new window in the current container" %{
-    i3-new-impl ""
+define-command i3-new -params 0.. -docstring "Create a new window in the current container" %{
+    i3-new-impl "" %arg{@}
 }
 
 declare-option -hidden str i3_before_cmd ''
@@ -75,8 +76,15 @@ define-command -hidden -params 1.. i3-terminal-impl %{
     }
 }
 
+define-command i3-terminal-popup -params 1.. -shell-completion -docstring '
+i3-terminal <program> [<arguments>]: create a new terminal as a floating window
+The program passed as argument will be executed in the new terminal
+' \
+%{
+    fail "not implemented"
+}
 
-define-command i3-terminal-b -params 1.. -command-completion -docstring '
+define-command i3-terminal-b -params 1.. -shell-completion -docstring '
 i3-terminal <program> [<arguments>]: create a new terminal underneath current window
 The program passed as argument will be executed in the new terminal
 ' \
@@ -86,7 +94,7 @@ The program passed as argument will be executed in the new terminal
     i3-terminal-impl %arg{@}
 }
 
-define-command i3-terminal-r -params 1.. -command-completion -docstring '
+define-command i3-terminal-r -params 1.. -shell-completion -docstring '
 i3-terminal <program> [<arguments>]: create a new terminal to right of current window
 The program passed as argument will be executed in the new terminal
 ' \
@@ -97,7 +105,7 @@ The program passed as argument will be executed in the new terminal
 }
 
 # FIXME: this isn't working
-define-command i3-terminal-l -params 1.. -command-completion -docstring '
+define-command i3-terminal-l -params 1.. -shell-completion -docstring '
 i3-terminal <program> [<arguments>]: create a new terminal to right of current window
 The program passed as argument will be executed in the new terminal
 ' \
